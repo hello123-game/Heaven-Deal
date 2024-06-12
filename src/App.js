@@ -1,13 +1,14 @@
 import React from 'react';
+import { Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './App.css';
 import Head from './components/Head';
 import Foot from './components/Foot';
-// import Body from './components/Body';
+import Market from './components/Market';
 import SignUp from './components/SignUp';
-import { Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Home } from './components/Home';
 import Login from './components/Login';
 import VerifyEmail from './components/VerifyEmail';
+import AddPost from './components/AddPost';
 
 const AppLayout = () => (
   
@@ -27,6 +28,14 @@ const router = createBrowserRouter([
       {
         path: "/",
         element:<Home />
+      },
+      {
+        path: "market",
+        element:<Market />,
+      },
+      {
+        path: "addpost",
+        element:<AddPost />
       },
       {
         path:"signup",

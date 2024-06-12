@@ -1,11 +1,13 @@
 import React, { useContext, useRef, useState } from 'react'
 import { checkValidData } from '../utils/validate'
 import { useNavigate } from 'react-router-dom'
-import { AuthContext } from '../utils/AuthContext'
+import { useAuthContext } from '../utils/AuthContext'
+import { useMyContext } from '../utils/MyContext'
 
 const Login = () => {
     const navigate = useNavigate()
     const [validationMessage, setValidationMessage] = useState(null)
+    const {setProfileData, token} = useAuthContext();
 
     // const name = useRef(null);
     const email = useRef(null);
@@ -14,10 +16,9 @@ const Login = () => {
     const [user, setUser] = useState({
         email: '',
         password: 'Binu@1234',
-
     })
 
-    const {token} = useContext(AuthContext)
+    // const { token } = useContext(AuthContext)
 
     const clickSignin = () => {
         console.log("Clicked")
@@ -35,33 +36,49 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log("Validation")
         const message = checkValidData(email.current.value, password.current.value)
         setValidationMessage(message)
 
         if (message) return;
         try {
-            
-                const res = await fetch(`http://localhost:8080/api/login`,{
-                    method: "POST",
-                    headers:{
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(user)
-                })
-                if(res.ok){
-                    const data = await res.json();
-                    const userId = data.data.userId
-                    console.log("response data", data)
-                    if(data.data.authToken !== ""){
-                        token(data.data.authToken)
-                    }else{
-                        navigate(`/verifyemail/${userId}`);
-                        // <VerifyEmail />
+            const res = await fetch(`http://localhost:8080/api/login`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(user)
+            })
+            if (res.ok) {
+                const data = await res.json();
+                const userId = data.data.userId
+                console.log("response data", data)
+                if (data.data.authToken !== "") {
+                    const authToken = data.data.authToken
+                    token(authToken)
+                    // setSharedState({data:true})
+                    const profileResponse = await fetch('http://localhost:8080/api/myprofile', {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "auth-token": authToken
+                        }
+                    })
+                    if (profileResponse.ok) {
+                        const profileData = await profileResponse.json();
+                        const name = profileData.data.name;
+                        console.log(name)
+                        setProfileData(name)        
+                        navigate("/");
+                    } else {
+                        console.log("failed to fetch api profile");
                     }
+                } else {
+                    navigate(`/verifyemail/${userId}`);
+                    // <VerifyEmail />
                 }
+            }
 
-            
+
         } catch (err) {
             console.log("register", err);
         }

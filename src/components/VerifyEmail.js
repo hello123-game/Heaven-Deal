@@ -1,15 +1,13 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { useParams,useNavigate } from 'react-router-dom'
-import { AuthContext } from '../utils/AuthContext'
+import { useAuthContext } from '../utils/AuthContext'
 
 const VerifyEmail = () => {
-    
     const [verificationCode, setVerificationCode] = useState("")
     const {userId} = useParams()
     console.log("Binu" + userId)
-    const {token} = useContext(AuthContext)
+    const {token} = useAuthContext()
     const navigate = useNavigate()
-
     
     const inputChange = (e) => {
         setVerificationCode(e.target.value)
@@ -19,7 +17,6 @@ const VerifyEmail = () => {
         e.preventDefault()
         const dcode = {verificationCode}
         
-    
         try 
             {
                 const res = await fetch(`http://localhost:8080/api/verifyemail/${userId}`,{
@@ -35,8 +32,25 @@ const VerifyEmail = () => {
                     console.log("response data", data)
 
                     if(data.data.authToken !== ""){
-                        token(data.data.authToken)
-                        navigate("/")
+                        const authToken = data.data.authToken
+                        token(authToken)
+                        
+                        const profileResponse = await fetch('http://localhost:8080/api/myprofile', {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "auth-token": authToken
+                            }
+                        })
+                        if(profileResponse.ok){
+                            const profileData = await profileResponse.json() 
+                            const name = profileData.data.name
+
+                            localStorage.setItem("username", name)
+                            navigate("/")
+                        }else{
+                            console.log("failed to fetch api profile")
+                        }
                     }else{
                         navigate(`/verifyemail/${userIds}`);
                     }

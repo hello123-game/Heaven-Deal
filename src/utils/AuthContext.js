@@ -1,15 +1,21 @@
-import { createContext } from "react";
+import { createContext,useContext, useState } from "react";
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-export const AuthProvider = ({children}) => {
+const AuthProvider = ({children}) => {
+    const [profileData, setProfileData] = useState("");
+
     const token = (verificationToken) =>{
         return localStorage.setItem("authToken", verificationToken)
     };
 
     return(
-        <AuthContext.Provider value = {{token}}>
+        <AuthContext.Provider value = {{token, profileData, setProfileData}}>
             {children}
         </AuthContext.Provider>
     )
 };
+
+const useAuthContext = () => useContext(AuthContext);
+
+export { AuthProvider, useAuthContext };
